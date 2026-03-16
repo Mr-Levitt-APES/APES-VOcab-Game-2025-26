@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APES Vocab Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2e3350;
+  --accent: #4ade80;
+  --accent2: #60a5fa;
+  --accent3: #f59e0b;
+  --accent4: #e879f9;
+  --text: #f0f2ff;
+  --text-muted: #8890b0;
+  --red: #f87171;
+  --green: #4ade80;
+  --gold: #fbbf24;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ─── PARTICLE BG ─── */
+#particles { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.2; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+/* ─── LAYOUT ─── */
+#app { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 1rem 5rem; }
+
+/* ─── HEADER ─── */
+.site-header {
+  padding: 1.25rem 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.logo .apes { color: var(--accent); }
+.logo .quest { color: var(--text-muted); font-weight: 400; }
+
+/* ─── PLAYER BAR ─── */
+.player-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.level-badge {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--accent4));
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  flex-shrink: 0;
+  position: relative;
+}
+.level-badge .lv-label { font-size: 9px; color: rgba(255,255,255,0.7); letter-spacing: 0.05em; text-transform: uppercase; }
+.level-badge .lv-num { font-size: 20px; font-weight: 800; line-height: 1; color: white; }
+.xp-section { min-width: 0; }
+.xp-title { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.xp-bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.xp-bar-fill {
+  height: 8px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.xp-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.stat-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.chip .chip-icon { font-size: 13px; }
+
+/* ─── TABS ─── */
+.tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+.tab-btn {
+  flex: 1; padding: 9px 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text-muted);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.tab-btn.active { background: var(--surface2); border-color: var(--accent2); color: var(--text); }
+.tab-btn:hover:not(.active) { border-color: var(--border); color: var(--text); }
+
+/* ─── QUIZ PANEL ─── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+.unit-selector {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1rem; flex-wrap: wrap;
+}
+.unit-selector label { font-size: 13px; color: var(--text-muted); }
+select {
+  font-family: 'Nunito', sans-serif; font-size: 13px;
+  padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface2);
+  color: var(--text); cursor: pointer; flex: 1; max-width: 320px;
+}
+
+/* ─── STREAK ─── */
+.streak-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 0.75rem;
+}
+.streak-pip {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s, transform 0.2s;
+}
+.streak-pip.lit { background: var(--accent3); transform: scale(1.2); }
+.streak-pip.fire { background: var(--red); transform: scale(1.3); animation: pulse 0.6s ease infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: 0.6; } }
+.streak-text { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
+.streak-text.hot { color: var(--accent3); font-weight: 700; }
+
+/* ─── WORD CARD ─── */
+.word-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.75rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.word-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+}
+.word-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+.pill {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.pill-unit { background: rgba(96,165,250,0.15); color: var(--accent2); border: 1px solid rgba(96,165,250,0.3); }
+.pill-xp { background: rgba(74,222,128,0.15); color: var(--accent); border: 1px solid rgba(74,222,128,0.3); }
+.word-term {
+  font-family: 'Syne', sans-serif;
+  font-size: 34px; font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
+  line-height: 1.1;
+}
+.word-prompt { font-size: 14px; color: var(--text-muted); }
+
+/* ─── CHOICES ─── */
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+@media (max-width: 480px) { .choices { grid-template-columns: 1fr; } }
+.choice-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 15px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer; text-align: left; line-height: 1.5;
+  transition: all 0.15s;
+}
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--accent2);
+  color: var(--text);
+  background: var(--surface2);
+  transform: translateY(-2px);
+}
+.choice-btn:disabled { cursor: default; }
+.choice-btn.correct { border-color: var(--green); background: rgba(74,222,128,0.1); color: var(--green); }
+.choice-btn.wrong { border-color: var(--red); background: rgba(248,113,113,0.1); color: var(--red); }
+.choice-btn.reveal { border-color: var(--green); background: rgba(74,222,128,0.15); color: var(--green); font-weight: 700; }
+
+/* ─── FEEDBACK ─── */
+.feedback-row { min-height: 28px; display: flex; align-items: center; gap: 10px; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.feedback-text { font-size: 14px; font-weight: 700; }
+.feedback-text.ok { color: var(--green); }
+.feedback-text.bad { color: var(--red); }
+.xp-pop {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 800;
+  color: var(--gold);
+  animation: xpFloat 1.2s ease forwards;
+}
+@keyframes xpFloat {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-24px); opacity: 0; }
+}
+
+/* ─── NEXT BUTTON ─── */
+.next-btn {
+  display: none;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: var(--bg);
+  border: none; border-radius: 10px;
+  padding: 11px 28px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.02em;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.next-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ─── PROGRESS PANEL ─── */
+.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.chapter-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.chapter-card.complete { border-color: var(--gold); }
+.chapter-card.complete::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--accent3));
+}
+.ch-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.ch-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+.ch-bar-fill { height: 6px; border-radius: 3px; background: var(--accent2); transition: width 0.5s; }
+.ch-bar-fill.done { background: var(--gold); }
+.ch-stats { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; }
+.ch-ticket-btn {
+  display: none; width: 100%; margin-top: 8px;
+  background: linear-gradient(135deg, var(--gold), var(--accent3));
+  color: var(--bg); border: none; border-radius: 8px;
+  padding: 7px; font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ch-ticket-btn:hover { opacity: 0.85; }
+
+/* ─── TOAST ─── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 20px;
+  font-size: 14px; font-weight: 600;
+  z-index: 1000; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap; text-align: center;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── LEVEL UP OVERLAY ─── */
+#levelup-overlay {
+  display: none; position: fixed;
+  inset: 0; background: rgba(0,0,0,0.85);
+  z-index: 900; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1rem;
+}
+#levelup-overlay.show { display: flex; }
+.levelup-box {
+  background: var(--surface); border: 2px solid var(--accent2);
+  border-radius: 24px; padding: 2.5rem 2rem;
+  text-align: center; max-width: 360px; width: 90%;
+  animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.levelup-icon { font-size: 56px; margin-bottom: 0.5rem; }
+.levelup-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent2); margin-bottom: 0.25rem; }
+.levelup-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 1.25rem; }
+.levelup-close {
+  background: var(--accent2); color: var(--bg); border: none;
+  border-radius: 10px; padding: 10px 28px;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+}
+
+/* ─── TICKET MODAL ─── */
+#ticket-overlay {
+  display: none; position: fixed;
+  inset: 0; background: rgba(0,0,0,0.9);
+  z-index: 950; align-items: center; justify-content: center;
+}
+#ticket-overlay.show { display: flex; }
+.ticket-wrapper { position: relative; }
+.ticket-close-btn {
+  position: absolute; top: -14px; right: -14px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+}
+
+/* ─── THE TICKET ─── */
+.ticket {
+  width: 460px; max-width: 92vw;
+  background: #1a1208;
+  border: 3px solid var(--gold);
+  border-radius: 16px;
+  padding: 2rem;
+  font-family: 'Syne', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+.ticket::before {
+  content: '';
+  position: absolute; inset: 8px;
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 10px; pointer-events: none;
+}
+.ticket-corner {
+  position: absolute;
+  width: 40px; height: 40px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.6;
+}
+.tc-tl { top: 14px; left: 14px; border-width: 2px 0 0 2px; }
+.tc-tr { top: 14px; right: 14px; border-width: 2px 2px 0 0; }
+.tc-bl { bottom: 14px; left: 14px; border-width: 0 0 2px 2px; }
+.tc-br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; }
+
+.ticket-header {
+  text-align: center;
+  border-bottom: 1px solid rgba(251,191,36,0.3);
+  padding-bottom: 1rem; margin-bottom: 1rem;
+}
+.ticket-logo { font-size: 11px; letter-spacing: 0.2em; color: var(--gold); opacity: 0.7; text-transform: uppercase; margin-bottom: 4px; }
+.ticket-title { font-size: 22px; font-weight: 800; color: var(--gold); margin-bottom: 2px; }
+.ticket-subtitle { font-size: 12px; color: rgba(251,191,36,0.6); }
+
+.ticket-body { text-align: center; margin-bottom: 1rem; }
+.ticket-chapter { font-size: 13px; color: rgba(251,191,36,0.7); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.ticket-chapter-name { font-size: 18px; font-weight: 700; color: white; margin-bottom: 1rem; }
+.ticket-seal {
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: rgba(251,191,36,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 1rem;
+}
+.ticket-hint-label { font-size: 10px; letter-spacing: 0.15em; color: rgba(251,191,36,0.6); text-transform: uppercase; margin-bottom: 6px; }
+.ticket-hint {
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--gold);
+  font-style: italic;
+  line-height: 1.5;
+  padding: 0 1rem;
+}
+.ticket-footer {
+  border-top: 1px solid rgba(251,191,36,0.3);
+  padding-top: 0.75rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ticket-instruct { font-family: 'Nunito', sans-serif; font-size: 11px; color: rgba(251,191,36,0.5); }
+.ticket-num { font-size: 12px; color: rgba(251,191,36,0.4); }
+
+.ticket-action-row {
+  display: flex; gap: 8px; margin-top: 1rem; justify-content: center;
+}
+.ticket-action-btn {
+  padding: 9px 20px; border-radius: 8px;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none;
+}
+.btn-screenshot { background: var(--gold); color: #1a1208; }
+.btn-close { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* ─── CONFETTI ─── */
+.confetti-piece {
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  animation: confettiFall 2.5s ease forwards;
+  pointer-events: none;
+  z-index: 999;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+
+<div id="app">
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="logo"><span class="apes">APES</span> <span class="quest">Vocab Quest</span></div>
+    <div style="font-size:12px;color:var(--text-muted);">Progress saves automatically</div>
+  </header>
+
+  <!-- PLAYER BAR -->
+  <div class="player-bar">
+    <div class="level-badge">
+      <span class="lv-label">LVL</span>
+      <span class="lv-num" id="lv-num">1</span>
+    </div>
+    <div class="xp-section">
+      <div class="xp-title">
+        <span id="xp-label">XP Progress</span>
+        <span id="xp-frac" style="color:var(--accent);">0 / 200</span>
+      </div>
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+      <div class="xp-subtitle" id="xp-subtitle">Answer correctly to earn XP!</div>
+    </div>
+    <div class="stat-chips">
+      <div class="chip"><span class="chip-icon">🔥</span><span id="streak-chip">0</span></div>
+      <div class="chip"><span class="chip-icon">🎫</span><span id="tickets-chip">0</span></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('quiz')">⚡ Quiz</button>
+    <button class="tab-btn" onclick="switchTab('progress')">📊 My Progress</button>
+    <button class="tab-btn" onclick="switchTab('tickets')">🎫 My Tickets</button>
+  </div>
+
+  <!-- QUIZ PANEL -->
+  <div class="panel active" id="panel-quiz">
+    <div class="unit-selector">
+      <label for="topicFilter">Unit:</label>
+      <select id="topicFilter" onchange="applyFilter()"></select>
+      <button onclick="resetUnitProgress()" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);padding:7px 12px;font-family:'Nunito',sans-serif;font-size:12px;cursor:pointer;">Reset unit</button>
+    </div>
+
+    <div class="streak-row" id="streak-row"></div>
+
+    <div class="word-card">
+      <div class="word-meta">
+        <span class="pill pill-unit" id="topic-badge"></span>
+        <span class="pill pill-xp" id="xp-pill">+10 XP</span>
+      </div>
+      <div class="word-term" id="word-display"></div>
+      <div class="word-prompt">Which of the following is the correct definition?</div>
+    </div>
+
+    <div class="choices" id="choices"></div>
+    <div class="feedback-row" id="feedback-row"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Continue →</button>
+  </div>
+
+  <!-- PROGRESS PANEL -->
+  <div class="panel" id="panel-progress">
+    <div class="chapter-grid" id="chapter-grid"></div>
+  </div>
+
+  <!-- TICKETS PANEL -->
+  <div class="panel" id="panel-tickets">
+    <div style="margin-bottom:1rem;">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px;">Earned Tickets</div>
+      <div style="font-size:13px;color:var(--text-muted);">Complete a chapter to earn a ticket. Screenshot and email to your teacher for a mystery prize!</div>
+    </div>
+    <div id="tickets-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;"></div>
+    <div id="no-tickets" style="color:var(--text-muted);font-size:14px;padding:2rem 0;">No tickets yet — master a complete unit to earn your first one!</div>
+  </div>
+</div>
+
+<!-- LEVEL UP OVERLAY -->
+<div id="levelup-overlay">
+  <div class="levelup-box">
+    <div class="levelup-icon">🏆</div>
+    <div class="levelup-title" id="lu-title">Level Up!</div>
+    <div class="levelup-sub" id="lu-sub">You reached Level 2!</div>
+    <button class="levelup-close" onclick="closeLevelUp()">Keep going →</button>
+  </div>
+</div>
+
+<!-- TICKET MODAL -->
+<div id="ticket-overlay">
+  <div class="ticket-wrapper">
+    <button class="ticket-close-btn" onclick="closeTicket()">×</button>
+    <div class="ticket" id="ticket-display">
+      <div class="ticket-corner tc-tl"></div>
+      <div class="ticket-corner tc-tr"></div>
+      <div class="ticket-corner tc-bl"></div>
+      <div class="ticket-corner tc-br"></div>
+      <div class="ticket-header">
+        <div class="ticket-logo">AP Environmental Science</div>
+        <div class="ticket-title">MASTERY TICKET</div>
+        <div class="ticket-subtitle">APES Vocab Quest — Official Achievement</div>
+      </div>
+      <div class="ticket-body">
+        <div class="ticket-chapter">Chapter Completed</div>
+        <div class="ticket-chapter-name" id="t-chapter"></div>
+        <div class="ticket-seal" id="t-seal"></div>
+        <div class="ticket-hint-label">🔐 Mystery Prize Hint</div>
+        <div class="ticket-hint" id="t-hint"></div>
+      </div>
+      <div class="ticket-footer">
+        <div class="ticket-instruct">Screenshot & email to your teacher</div>
+        <div class="ticket-num" id="t-num"></div>
+      </div>
+    </div>
+    <div class="ticket-action-row">
+      <button class="ticket-action-btn btn-screenshot" onclick="closeTicket()">Got it! 📸</button>
+      <button class="ticket-action-btn btn-close" onclick="closeTicket()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── VOCAB DATA ───────────────────────────────────────────────
+const VOCAB = [
+["Studying the State of Our Earth","abiotic","nonliving"],
+["Studying the State of Our Earth","accuracy","how close a measured value is to the actual or true value"],
+["Studying the State of Our Earth","anthropogenic","derived from human activities"],
+["Studying the State of Our Earth","background extinction rate","the average rate at which species become extinct over the long term"],
+["Studying the State of Our Earth","biodiversity","the diversity of life forms in an environment"],
+["Studying the State of Our Earth","biophilia","love of life"],
+["Studying the State of Our Earth","biotic","living"],
+["Studying the State of Our Earth","control group","in a scientific investigation, a group that experiences exactly the same conditions as the experimental group, except for the single variable under study"],
+["Studying the State of Our Earth","development","improvement in human well-being through economic advancement"],
+["Studying the State of Our Earth","ecological footprint","a measure of how much an individual consumes, expressed in area of land"],
+["Studying the State of Our Earth","ecosystem","a particular location on Earth with interacting biotic and abiotic components"],
+["Studying the State of Our Earth","ecosystem services","the processes by which life-supporting resources such as clean water, timber, fisheries, and agricultural crops are produced"],
+["Studying the State of Our Earth","environment","the sum of all the conditions surrounding us that influence life"],
+["Studying the State of Our Earth","environmental indicator","an indicator that describes the current state of an environmental system"],
+["Studying the State of Our Earth","environmental science","the field of study that looks at interactions among human systems and those found in nature"],
+["Studying the State of Our Earth","hypothesis","a testable conjecture about how something works"],
+["Studying the State of Our Earth","null hypothesis","a prediction that there is no difference between groups or conditions"],
+["Studying the State of Our Earth","precision","how close the repeated measurements of a sample are to one another"],
+["Studying the State of Our Earth","scientific method","an objective method to explore the natural world, draw inferences from it, and predict the outcome of certain events, processes, or changes"],
+["Studying the State of Our Earth","species","a group of organisms that is distinct from other groups in its morphology, behavior, or biochemical properties"],
+["Studying the State of Our Earth","sustainability","living on Earth in a way that allows humans to use its resources without depriving future generations of those resources"],
+["Studying the State of Our Earth","theory","a hypothesis that has been repeatedly tested and confirmed by multiple groups of researchers and has reached wide acceptance"],
+["Studying the State of Our Earth","uncertainty","an estimate of how much a measured or calculated value differs from a true value"],
+["Environmental Systems","acid","a substance that contributes hydrogen ions to a solution"],
+["Environmental Systems","atom","the smallest particle that can contain the chemical properties of an element"],
+["Environmental Systems","base","a substance that contributes hydroxide ions to a solution"],
+["Environmental Systems","capillary action","a property of water that occurs when adhesion of water molecules to a surface is stronger than cohesion between the molecules"],
+["Environmental Systems","chemical energy","potential energy stored in chemical bonds"],
+["Environmental Systems","closed system","a system in which matter and energy exchanges do not occur across boundaries"],
+["Environmental Systems","covalent bond","the bond formed when elements share electrons"],
+["Environmental Systems","DNA","a nucleic acid, the genetic material that contains the code for reproducing the components of the next generation"],
+["Environmental Systems","energy","the ability to do work or transfer heat"],
+["Environmental Systems","energy efficiency","the ratio of the amount of energy expended in the form you want to the total amount of energy that is introduced into the system"],
+["Environmental Systems","entropy","randomness in a system"],
+["Environmental Systems","first law of thermodynamics","energy can neither be created nor destroyed but can change from one form to another"],
+["Environmental Systems","half-life","the time it takes for one-half of an original radioactive parent atom to decay"],
+["Environmental Systems","hydrogen bond","a weak chemical bond that forms when hydrogen atoms that are covalently bonded to one atom are attracted to another atom on another molecule"],
+["Environmental Systems","ionic bond","a chemical bond between two ions of opposite charges"],
+["Environmental Systems","kinetic energy","the energy of motion"],
+["Environmental Systems","law of conservation of matter","matter cannot be created or destroyed; it can only change form"],
+["Environmental Systems","negative feedback loop","a feedback loop in which a system responds to a change by returning to its original state"],
+["Environmental Systems","open system","a system in which exchanges of matter or energy occur across system boundaries"],
+["Environmental Systems","pH","a measure of the acidity or alkalinity of a solution"],
+["Environmental Systems","positive feedback loop","a feedback loop in which change in a system is amplified"],
+["Environmental Systems","potential energy","stored energy that has not been released"],
+["Environmental Systems","second law of thermodynamics","when energy is transformed, its ability to do work diminishes"],
+["Environmental Systems","steady state","a state in which inputs equal outputs, so that the system is not changing over time"],
+["Ecosystem Ecology","aerobic respiration","the process by which cells convert glucose and oxygen into energy, carbon dioxide, and water"],
+["Ecosystem Ecology","algal bloom","a rapid increase in the algal population of a waterway"],
+["Ecosystem Ecology","autotroph","an organism that uses the energy of the Sun to produce usable forms of energy; also known as a producer"],
+["Ecosystem Ecology","biomass","the total mass of all living matter in a specific area"],
+["Ecosystem Ecology","biosphere","the region of our planet where life resides, the combination of all ecosystems on Earth"],
+["Ecosystem Ecology","carbon cycle","the movement of carbon around the biosphere"],
+["Ecosystem Ecology","carnivore","a consumer that eats other consumers"],
+["Ecosystem Ecology","consumer","an organism that is incapable of photosynthesis and must obtain its energy by consuming other organisms"],
+["Ecosystem Ecology","decomposer","fungi or bacteria that converts organic matter into small elements and molecules that can be recycled back into the ecosystem"],
+["Ecosystem Ecology","denitrification","the conversion of nitrate into gases nitrous oxide and nitrogen gas, which is emitted into the atmosphere"],
+["Ecosystem Ecology","food chain","the sequence of consumption from producers through tertiary consumers"],
+["Ecosystem Ecology","food web","a complex model of how energy and matter move between trophic levels"],
+["Ecosystem Ecology","gross primary productivity (GPP)","the total amount of solar energy that producers in an ecosystem capture via photosynthesis over a given amount of time"],
+["Ecosystem Ecology","herbivore","a consumer that eats producers; also known as a primary consumer"],
+["Ecosystem Ecology","hydrologic cycle","the movement of water through the biosphere"],
+["Ecosystem Ecology","hypoxic","low in oxygen"],
+["Ecosystem Ecology","limiting nutrient","a nutrient required for the growth of an organism but available in a lower quantity than other nutrients"],
+["Ecosystem Ecology","net primary productivity (NPP)","the energy captured by producers in an ecosystem minus the energy producers respire"],
+["Ecosystem Ecology","nitrification","the conversion of ammonia into nitrite and then into nitrate"],
+["Ecosystem Ecology","nitrogen cycle","the movement of nitrogen around the biosphere"],
+["Ecosystem Ecology","nitrogen fixation","a process by which some organisms can convert nitrogen gas molecules directly into ammonia"],
+["Ecosystem Ecology","photosynthesis","the process by which producers use solar energy to convert carbon dioxide and water into glucose"],
+["Ecosystem Ecology","resilience","the rate at which an ecosystem returns to its original state after a disturbance"],
+["Ecosystem Ecology","trophic levels","the successive levels of organisms consuming one another"],
+["Ecosystem Ecology","trophic pyramid","a representation of the distribution of biomass, numbers, or energy among trophic levels"],
+["Ecosystem Ecology","watershed","all land in a given landscape that drains into a particular stream, river, lake, or wetland"],
+["Global Climates and Biomes","adiabatic cooling","the cooling effect of reduced pressure on air as it rises higher in the atmosphere and expands"],
+["Global Climates and Biomes","adiabatic heating","the heating effect of increased pressure on air as it sinks toward the surface of Earth"],
+["Global Climates and Biomes","albedo","the percentage of incoming sunlight reflected from a surface"],
+["Global Climates and Biomes","boreal forest","a forest biome made up primarily of coniferous evergreen trees that can tolerate cold winters and short growing seasons"],
+["Global Climates and Biomes","climate","the average weather that occurs in a given region over a long period of time"],
+["Global Climates and Biomes","coral bleaching","a phenomenon in which algae inside corals die, causing the corals to turn white"],
+["Global Climates and Biomes","Coriolis effect","the deflection of an object's path due to the rotation of Earth"],
+["Global Climates and Biomes","El Nino-Southern Oscillation (ENSO)","a reversal of wind and water currents in the South Pacific"],
+["Global Climates and Biomes","eutrophic","describes a lake with a high level of productivity"],
+["Global Climates and Biomes","gyre","a large-scale pattern of water circulation that moves clockwise in the Northern Hemisphere"],
+["Global Climates and Biomes","Hadley cell","a convection current in the atmosphere that cycles between the equator and 30°N and 30°S"],
+["Global Climates and Biomes","intertidal zone","the narrow band of coastline between the levels of high tide and low tide"],
+["Global Climates and Biomes","oligotrophic","describes a lake with a low level of productivity"],
+["Global Climates and Biomes","permafrost","an impermeable, permanently frozen layer of soil"],
+["Global Climates and Biomes","rain shadow","a region with dry conditions found on the leeward side of a mountain range"],
+["Global Climates and Biomes","thermohaline circulation","an oceanic circulation pattern that drives the mixing of surface water and deep water"],
+["Global Climates and Biomes","tropical rainforest","a warm and wet biome found between 20°N and 20°S of the equator with little seasonal temperature variation and high precipitation"],
+["Global Climates and Biomes","tundra","a cold and treeless biome with low-growing vegetation"],
+["Global Climates and Biomes","upwelling","the upward movement of ocean water toward the surface as a result of diverging currents"],
+["Global Climates and Biomes","weather","the short-term conditions of the atmosphere in a local area"],
+["Evolution","adaptation","a trait that improves an individual's fitness"],
+["Evolution","allopatric speciation","the process of speciation that occurs with geographic isolation"],
+["Evolution","bottleneck effect","a reduction in the genetic diversity of a population caused by a reduction in its size"],
+["Evolution","evolution","a change in the genetic composition of a population over time"],
+["Evolution","extinction","the death of the last member of a species"],
+["Evolution","fitness","an individual's ability to survive and reproduce"],
+["Evolution","founder effect","a change in the genetic composition of a population as a result of descending from a small number of colonizing individuals"],
+["Evolution","fundamental niche","the suite of abiotic conditions under which a species can survive, grow, and reproduce"],
+["Evolution","gene flow","the process by which individuals move from one population to another and thereby alter the genetic composition of both populations"],
+["Evolution","genetic drift","a change in the genetic composition of a population over time as a result of random mating"],
+["Evolution","genetically modified organism (GMO)","an organism produced by copying genes from a species with a desirable trait and inserting them into another species"],
+["Evolution","mass extinction","a large extinction of species in a relatively short period of time"],
+["Evolution","mutation","a random change in the genetic code produced by a mistake in the copying process"],
+["Evolution","niche generalist","a species that can live under a wide range of abiotic or biotic conditions"],
+["Evolution","niche specialist","a species that is specialized to live in a specific habitat or to feed on a small group of species"],
+["Evolution","realized niche","the range of abiotic and biotic conditions under which a species actually lives"],
+["Evolution","reproductive isolation","the result of two populations within a species evolving separately to the point that they can no longer interbreed and produce viable offspring"],
+["Population and Community Ecology","carrying capacity (K)","the limit of how many individuals in a population the environment can sustain"],
+["Population and Community Ecology","commensalism","a relationship between species in which one species benefits and the other species is neither harmed nor helped"],
+["Population and Community Ecology","competitive exclusion principle","the principle stating that two species competing for the same limiting resource cannot coexist"],
+["Population and Community Ecology","ecological succession","the predictable replacement of one group of species by another group of species over time"],
+["Population and Community Ecology","exponential growth model","a growth model that estimates a population's future size based on the intrinsic growth rate and the number of reproducing individuals"],
+["Population and Community Ecology","invasive species","a species that spreads rapidly across large areas"],
+["Population and Community Ecology","J-shaped curve","the curve of the exponential growth model when graphed"],
+["Population and Community Ecology","keystone species","a species that plays a far more important role in its community than its relative abundance might suggest"],
+["Population and Community Ecology","logistic growth model","a growth model that describes a population whose growth slows as it approaches the carrying capacity of the environment"],
+["Population and Community Ecology","mutualism","an interaction between two species that increases the chances of survival or reproduction for both species"],
+["Population and Community Ecology","overshoot","when a population becomes larger than the environment's carrying capacity"],
+["Population and Community Ecology","parasitism","an interaction in which one organism lives on or in another organism"],
+["Population and Community Ecology","pioneer species","a species that can colonize new areas rapidly and grow well in full sunshine"],
+["Population and Community Ecology","predation","an interaction in which one animal typically kills and consumes another animal"],
+["Population and Community Ecology","primary succession","ecological succession occurring on surfaces that are initially devoid of soil"],
+["Population and Community Ecology","r-selected species","a species that has a high intrinsic growth rate, which often leads to population overshoots and die-offs"],
+["Population and Community Ecology","S-shaped curve","the shape of the logistic growth model when graphed"],
+["Population and Community Ecology","secondary succession","the succession of plant life that occurs in areas that have been disturbed but have not lost their soil"],
+["The Human Population","crude birth rate (CBR)","the number of births per 1,000 individuals per year"],
+["The Human Population","crude death rate (CDR)","the number of deaths per 1,000 individuals per year"],
+["The Human Population","demographic transition","the theory that as a country industrializes and becomes more affluent, it undergoes a predictable shift in population growth"],
+["The Human Population","doubling time","the number of years it takes a population to double"],
+["The Human Population","IPAT equation","an equation used to estimate the impact of the human lifestyle on the environment; impact = population x affluence x technology"],
+["The Human Population","life expectancy","the average number of years that an infant born in a particular year can be expected to live"],
+["The Human Population","population momentum","continued population growth after growth reduction measures have been implemented"],
+["The Human Population","replacement-level fertility","the total fertility rate required to offset the average number of deaths in a population to maintain the current population size"],
+["The Human Population","total fertility rate (TFR)","an estimate of the average number of children that each woman in a population will bear throughout her childbearing years"],
+["Earth Systems","A horizon","frequently the top layer of soil, a zone of organic material and minerals that have been mixed together; also known as topsoil"],
+["Earth Systems","asthenosphere","the layer of Earth located in the outer part of the mantle, composed of semi-molten rock"],
+["Earth Systems","chemical weathering","the breakdown of rocks and minerals by chemical reactions, the dissolving of chemical elements from rocks, or both"],
+["Earth Systems","convergent plate boundary","an area where plates move toward one another and collide"],
+["Earth Systems","divergent plate boundary","an area beneath the ocean where tectonic plates move away from each other"],
+["Earth Systems","earthquake","the sudden movement of Earth's crust caused by a release of potential energy along a geologic fault"],
+["Earth Systems","erosion","the physical removal of rock fragments from a landscape or ecosystem"],
+["Earth Systems","igneous rock","rock formed directly from magma"],
+["Earth Systems","lithosphere","the outermost layer of Earth, including the mantle and crust"],
+["Earth Systems","magma","molten rock"],
+["Earth Systems","metamorphic rock","rock that forms when sedimentary rock, igneous rock, or other metamorphic rock is subjected to high temperature and pressure"],
+["Earth Systems","plate tectonics","the theory that the lithosphere of Earth is divided into plates, most of which are in constant motion"],
+["Earth Systems","rock cycle","the geologic cycle governing the constant formation, alteration, and destruction of rock material"],
+["Earth Systems","sedimentary rock","rock that forms when sediments such as muds, sands, or gravels are compressed by overlying sediments"],
+["Earth Systems","subduction","the process of one crustal plate passing under another"],
+["Earth Systems","tectonic cycle","the sum of the processes that build up and break down the lithosphere"],
+["Water Resources","aquifer","a permeable layer of rock and sediment that contains groundwater"],
+["Water Resources","cone of depression","an area lacking groundwater due to rapid withdrawal by a well"],
+["Water Resources","confined aquifer","an aquifer surrounded by a layer of impermeable rock or clay that impedes water flow"],
+["Water Resources","desalination","the process of removing the salt from salt water"],
+["Water Resources","groundwater recharge","a process by which water percolates through the soil and works its way into an aquifer"],
+["Water Resources","saltwater intrusion","an infiltration of salt water in an area where groundwater pressure has been reduced from extensive drilling of wells"],
+["Water Resources","unconfined aquifer","an aquifer made of porous rock covered by soil out of which water can easily flow"],
+["Water Resources","water table","the uppermost level at which the water in a given area fully saturates rock or soil"],
+["Land, Public and Private","clear-cutting","a method of harvesting trees that involves removing all or almost all of the trees within an area"],
+["Land, Public and Private","Endangered Species Act","a 1973 U.S. act designed to protect species from extinction"],
+["Land, Public and Private","externality","the cost or benefit of a good or service that is not included in the purchase price of that good or service"],
+["Land, Public and Private","maximum sustainable yield (MSY)","the maximum amount of a renewable resource that can be harvested without compromising the future availability of that resource"],
+["Land, Public and Private","prescribed burn","a fire deliberately set under controlled conditions in order to reduce the accumulation of dead biomass on a forest floor"],
+["Land, Public and Private","selective cutting","the method of harvesting trees that involves the removal of single trees or a relatively small number of trees from among many in a forest"],
+["Land, Public and Private","tragedy of the commons","the tendency of a shared, limited resource to become depleted because people act from self-interest for short-term gain"],
+["Land, Public and Private","urban sprawl","urbanized areas that spread into rural areas, removing clear boundaries between the two"],
+["Feeding the World","aquaculture","farming aquatic organisms such as fish, shellfish, and seaweeds"],
+["Feeding the World","bycatch","the unintentional catch of nontarget species while fishing"],
+["Feeding the World","contour plowing","an agricultural technique in which plowing and harvesting are done parallel to the topographic contours of the land"],
+["Feeding the World","crop rotation","an agricultural technique in which crop species in a field are rotated from season to season"],
+["Feeding the World","desertification","the transformation of arable, productive land to desert or unproductive land due to climate change or destructive land use"],
+["Feeding the World","fishery collapse","the decline of a fish population by 90 percent or more"],
+["Feeding the World","food insecurity","a condition in which people do not have adequate access to food"],
+["Feeding the World","Green Revolution","a shift in agricultural practices in the 20th century that included new management techniques, mechanization, fertilization, irrigation, and improved crop varieties"],
+["Feeding the World","integrated pest management (IPM)","an agricultural practice that uses a variety of techniques designed to minimize pesticide inputs"],
+["Feeding the World","monocropping","an agricultural method that utilizes large plantings of a single species or variety"],
+["Feeding the World","no-till agriculture","an agricultural method in which farmers do not turn the soil between seasons as a means of reducing topsoil erosion"],
+["Feeding the World","pesticide resistance","a trait possessed by certain individuals that are exposed to a pesticide and survive"],
+["Feeding the World","salinization","a form of soil degradation that occurs when the small amount of salts in irrigation water becomes highly concentrated on the soil surface through evaporation"],
+["Feeding the World","sustainable agriculture","agriculture that fulfills the need for food and fiber while enhancing the quality of the soil, minimizing the use of nonrenewable resources, and allowing economic viability for the farmer"],
+["Nonrenewable Energy Resources","coal","a solid fuel formed primarily from the remains of trees, ferns, and other plant materials preserved 280 million to 360 million years ago"],
+["Nonrenewable Energy Resources","fission","a nuclear reaction in which a neutron strikes a relatively large atomic nucleus, which then splits into two or more parts, releasing additional neutrons and energy"],
+["Nonrenewable Energy Resources","fossil fuel","a fuel derived from biological material that became fossilized millions of years ago"],
+["Nonrenewable Energy Resources","Hubbert curve","a bell-shaped curve representing oil use and projecting when world oil production will reach a maximum and when the world will run out of oil"],
+["Nonrenewable Energy Resources","nuclear fusion","a reaction that occurs when lighter nuclei are forced together to produce heavier nuclei"],
+["Nonrenewable Energy Resources","peak oil","the point at which half the total known oil supply is used up"],
+["Nonrenewable Energy Resources","petroleum","a fossil fuel that occurs in underground deposits, composed of a liquid mixture of hydrocarbons, water, and sulfur"],
+["Nonrenewable Energy Resources","radioactive waste","nuclear fuel that can no longer produce enough heat to be useful in a power plant but continues to emit radioactivity"],
+["Energy Sustainability","active solar energy","energy captured from sunlight with advanced technologies"],
+["Energy Sustainability","biodiesel","a diesel substitute produced by extracting and chemically altering oil from plants"],
+["Energy Sustainability","carbon neutral","an activity that does not change atmospheric CO2 concentrations"],
+["Energy Sustainability","geothermal energy","heat energy that comes from the natural radioactive decay of elements deep within Earth"],
+["Energy Sustainability","hydroelectricity","electricity generated by the kinetic energy of moving water"],
+["Energy Sustainability","passive solar design","construction designed to take advantage of solar radiation without active technology"],
+["Energy Sustainability","photovoltaic solar cell","a system of capturing energy from sunlight and converting it directly into electricity"],
+["Energy Sustainability","smart grid","an efficient, self-regulating electricity distribution network that accepts any source of electricity and distributes it automatically to end users"],
+["Energy Sustainability","tidal energy","energy that comes from the movement of water driven by the gravitational pull of the moon"],
+["Water Pollution","biochemical oxygen demand (BOD)","the amount of oxygen a quantity of water uses over a period of time at specific temperatures"],
+["Water Pollution","cultural eutrophication","an increase in fertility in a body of water, the result of anthropogenic inputs of nutrients"],
+["Water Pollution","dead zone","in a body of water, an area with extremely low oxygen concentration and very little life"],
+["Water Pollution","eutrophication","a phenomenon in which a body of water becomes rich in nutrients"],
+["Water Pollution","nonpoint source","a diffuse area that produces pollution"],
+["Water Pollution","point source","a distinct location from which pollution is directly produced"],
+["Water Pollution","thermal pollution","nonchemical water pollution that occurs when human activities cause a substantial change in the temperature of water"],
+["Air Pollution","air pollution","the introduction of chemicals, particulate matter, or microorganisms into the atmosphere at concentrations high enough to harm plants, animals, and materials"],
+["Air Pollution","ozone (O3)","a secondary pollutant made up of three oxygen atoms bound together"],
+["Air Pollution","particulate matter (PM)","solid or liquid particulars suspended in air"],
+["Air Pollution","photochemical smog","smog that is dominated by oxidants such as ozone; also known as Los Angeles-type smog"],
+["Air Pollution","primary pollutant","a polluting compound that comes directly out of a smokestack, exhaust pipe, or natural emission source"],
+["Air Pollution","secondary pollutant","a primary pollutant that has undergone transformation in the presence of sunlight, water, oxygen, or other compounds"],
+["Air Pollution","thermal inversion","a situation in which a relatively warm layer of air at mid-altitude covers a layer of cold, dense air below"],
+["Air Pollution","volatile organic compound (VOC)","an organic compound that evaporates at typical atmospheric temperatures"],
+["Waste Management","composting","creation of organic matter by decomposition under controlled conditions to produce an organic-rich material that enhances soil structure"],
+["Waste Management","hazardous waste","liquid, solid, gaseous, or sludge waste material that is harmful to humans or ecosystems"],
+["Waste Management","incineration","the process of burning waste materials to reduce volume and mass, sometimes to generate electricity or heat"],
+["Waste Management","leachate","liquid that contains elevated levels of pollutants as a result of having passed through municipal solid waste or contaminated soil"],
+["Waste Management","municipal solid waste (MSW)","refuse collected by municipalities from households, small businesses, and institutions"],
+["Waste Management","sanitary landfill","an engineered ground facility designed to hold municipal solid waste with as little contamination of the surrounding environment as possible"],
+["Waste Management","source reduction","an approach to waste management that seeks to cut waste by reducing the use of potential waste materials in the early stages of design and manufacture"],
+["Human Health","bioaccumulation","an increased concentration of a chemical within an organism over time"],
+["Human Health","biomagnification","the increase in chemical concentration in animal tissues as the chemical moves up the food chain"],
+["Human Health","carcinogen","a chemical that causes cancer"],
+["Human Health","endocrine disruptor","a chemical that interferes with the normal functioning of hormones in an animal's body"],
+["Human Health","epidemic","a situation in which a pathogen causes a rapid increase in disease"],
+["Human Health","LD50","the lethal dose of a chemical that kills 50 percent of the individuals in a dose-response study"],
+["Human Health","pandemic","an epidemic that occurs over a large geographic region"],
+["Human Health","precautionary principle","a principle based on the belief that action should be taken against a plausible environmental hazard"],
+["Human Health","synergistic interaction","a situation in which two risks together cause more harm than expected based on the separate effects of each risk alone"],
+["Biodiversity and Conservation","alien species","a species living outside its historical range; also known as exotic species"],
+["Biodiversity and Conservation","Convention on Biological Diversity","an international treaty to help protect biodiversity"],
+["Biodiversity and Conservation","endangered species","a species that is in danger of extinction within the foreseeable future throughout all or a significant portion of its range"],
+["Biodiversity and Conservation","invasive species","a species that spreads rapidly across large areas"],
+["Biodiversity and Conservation","native species","species that live in their historical range, typically where they have lived for thousands or millions of years"],
+["Global Change","carbon sequestration","an approach to stabilizing greenhouse gases by removing CO2 from the atmosphere"],
+["Global Change","global climate change","changes in the average weather that occurs in an area over a period of years or decades"],
+["Global Change","global warming","the warming of the oceans, land masses, and atmosphere of Earth"],
+["Global Change","greenhouse effect","absorption of infrared radiation by atmospheric gases and reradiation of the energy back toward Earth"],
+["Global Change","greenhouse gases","gases in Earth's atmosphere that trap heat near the surface"],
+["Global Change","greenhouse warming potential","an estimate of how much a molecule of any compound can contribute to global warming over a period of 100 years relative to a molecule of CO2"],
+["Global Change","Kyoto Protocol","an international agreement that sets a goal for global emissions of greenhouse gases from all industrialized countries to be reduced by 5.2 percent below their 1990 levels by 2012"],
+["Global Change","ocean acidification","the process by which an increase in ocean CO2 causes more CO2 to be converted to carbonic acid, which lowers the pH of the water"],
+["Sustainability and Economics","cap-and-trade","an approach to controlling CO2 emissions, where a cap places an upper limit on the amount of pollutant that can be emitted and trade allows companies to buy and sell allowances"],
+["Sustainability and Economics","command-and-control approach","a strategy for pollution control that involves regulations and enforcement mechanisms"],
+["Sustainability and Economics","ecological footprint","a measure of how much an individual consumes, expressed in area of land"],
+["Sustainability and Economics","externality","the cost or benefit of a good or service that is not included in the purchase price of that good or service"],
+["Sustainability and Economics","green tax","a tax placed on environmentally harmful activities or emissions in an attempt to internalize some of the externalities"],
+["Sustainability and Economics","market failure","when the economic system does not account for all costs"],
+["Sustainability and Economics","sustainable development","development that balances current human well-being and economic advancement with resource management for the benefit of future generations"],
+["Sustainability and Economics","tragedy of the commons","the tendency of a shared, limited resource to become depleted because people act from self-interest for short-term gain"],
+["Sustainability and Economics","triple bottom line","an approach to sustainability that considers three factors—economic, environmental, and social—when making decisions about business, the economy, and development"],
+];
+
+// ─── TICKET HINTS (per chapter, escalating mystery) ───────────
+const CHAPTER_META = {
+  "Studying the State of Our Earth":    { icon: "🌍", hint: "Your prize involves something you'll use every day in this class… and probably for the rest of your life." },
+  "Environmental Systems":              { icon: "⚗️", hint: "Two tickets collected. The prize is getting closer — it has something to do with a day off from regular class work." },
+  "Ecosystem Ecology":                  { icon: "🌿", hint: "Three tickets! Rumor has it the final prize involves food. Good food. Chosen by you." },
+  "Global Climates and Biomes":         { icon: "🌦️", hint: "Four tickets. The prize is starting to take shape — it's something that happens outside these four walls." },
+  "Evolution":                          { icon: "🧬", hint: "Halfway there! The mystery prize is worth real bragging rights. Think recognition in a big way." },
+  "Population and Community Ecology":   { icon: "📈", hint: "Six tickets! The prize has two parts. You've just unlocked a hint about the first part: it's edible." },
+  "The Human Population":               { icon: "👥", hint: "Seven down. The second part of the prize? It involves your grade. In a very good way." },
+  "Earth Systems":                      { icon: "🪨", hint: "Eight tickets! Almost there. The full prize is something no student has earned in years. Are you the one?" },
+  "Water Resources":                    { icon: "💧", hint: "Nine tickets! The final prize is a legendary teacher secret — collect the last few to unlock it completely." },
+  "Land, Public and Private":           { icon: "🌲", hint: "Ten tickets! You're in elite territory. The prize is customized just for you — your choice, your reward." },
+  "Feeding the World":                  { icon: "🌾", hint: "Eleven tickets! The final secret is almost revealed. Only the most dedicated students ever see what comes next." },
+  "Nonrenewable Energy Resources":      { icon: "⛽", hint: "Twelve tickets! One final chapter stands between you and the ultimate prize. Don't stop now." },
+  "Energy Sustainability":              { icon: "☀️", hint: "Thirteen tickets! You are SO close. The ultimate prize awaits anyone who collects every single ticket." },
+  "Water Pollution":                    { icon: "🚰", hint: "Fourteen tickets! The prize is legendary. Only one more chapter separates you from total APES mastery." },
+  "Air Pollution":                      { icon: "💨", hint: "Fifteen tickets! The final chapter is all that stands between you and a reward your classmates will envy forever." },
+  "Waste Management":                   { icon: "♻️", hint: "Sixteen tickets! Almost a complete set. The prize grows with every ticket — you're nearly at the top." },
+  "Human Health":                       { icon: "🏥", hint: "Seventeen tickets! One chapter remains. The final ticket unlocks the full mystery — it's bigger than any single prize." },
+  "Biodiversity and Conservation":      { icon: "🦁", hint: "Eighteen tickets! You've mastered almost everything. The complete set earns you something truly special from your teacher." },
+  "Global Change":                      { icon: "🌡️", hint: "Nineteen tickets! The complete set is within reach. Students who collect all 20 tickets earn the LEGENDARY prize." },
+  "Sustainability and Economics":       { icon: "♻️", hint: "🏆 ALL 20 TICKETS! You have mastered every chapter of APES. Email ALL your tickets to claim the LEGENDARY GRAND PRIZE — the ultimate reward your teacher has been saving for the most dedicated student of the year!" },
+};
+
+const ALL_CHAPTERS = [...new Set(VOCAB.map(r => r[0]))];
+const TOTAL_CHAPTERS = ALL_CHAPTERS.length;
+
+// ─── XP / LEVEL CONFIG ───────────────────────────────────────
+const LEVELS = [
+  { level: 1, xpNeeded: 0,    title: "Novice Explorer" },
+  { level: 2, xpNeeded: 200,  title: "Field Observer" },
+  { level: 3, xpNeeded: 500,  title: "Eco Apprentice" },
+  { level: 4, xpNeeded: 900,  title: "Systems Thinker" },
+  { level: 5, xpNeeded: 1400, title: "Climate Analyst" },
+  { level: 6, xpNeeded: 2000, title: "Biosphere Scholar" },
+  { level: 7, xpNeeded: 2800, title: "Sustainability Expert" },
+  { level: 8, xpNeeded: 3800, title: "APES Master" },
+];
+
+// ─── STATE ───────────────────────────────────────────────────
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('apesquest') || 'null'); } catch(e) { return null; }
+}
+function saveState() {
+  localStorage.setItem('apesquest', JSON.stringify({
+    wordData: allWords.map(w => ({ score: w.score, asked: w.asked })),
+    xp: state.xp,
+    streak: state.streak,
+    earnedTickets: state.earnedTickets,
+  }));
+}
+
+const saved = loadState();
+let allWords = VOCAB.map(([topic, word, def], i) => ({
+  topic, word, def,
+  score: saved?.wordData?.[i]?.score ?? 0,
+  asked: saved?.wordData?.[i]?.asked ?? 0,
+}));
+
+let state = {
+  xp: saved?.xp ?? 0,
+  streak: saved?.streak ?? 0,
+  earnedTickets: saved?.earnedTickets ?? [],
+};
+
+let filtered = [...allWords];
+let current = null;
+let answered = false;
+let activeTab = 'quiz';
+
+// ─── PARTICLES ───────────────────────────────────────────────
+function makeParticles() {
+  const cont = document.getElementById('particles');
+  const colors = ['#4ade80','#60a5fa','#f59e0b','#e879f9','#34d399'];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 3 + Math.random() * 5;
+    p.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${12+Math.random()*16}s;
+      animation-delay:${Math.random()*10}s;
+    `;
+    cont.appendChild(p);
+  }
+}
+makeParticles();
+
+// ─── TABS ─────────────────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['quiz','progress','tickets'][i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach((p,i) => {
+    p.classList.toggle('active', ['panel-quiz','panel-progress','panel-tickets'][i] === p.id);
+  });
+  if (tab === 'progress') renderProgress();
+  if (tab === 'tickets') renderTicketsList();
+}
+
+// ─── TOPIC FILTER ─────────────────────────────────────────────
+const topics = ["All Units", ...ALL_CHAPTERS];
+const sel = document.getElementById('topicFilter');
+topics.forEach(t => {
+  const o = document.createElement('option'); o.value = t; o.textContent = t;
+  sel.appendChild(o);
+});
+
+function applyFilter() {
+  const t = sel.value;
+  filtered = t === 'All Units' ? allWords : allWords.filter(w => w.topic === t);
+  state.streak = 0;
+  updateStreak();
+  nextQuestion();
+}
+
+function resetUnitProgress() {
+  if (!confirm('Reset progress for this unit only?')) return;
+  filtered.forEach(w => { w.score = 0; w.asked = 0; });
+  state.streak = 0;
+  updateStreak();
+  saveState();
+  nextQuestion();
+}
+
+// ─── XP & LEVEL ──────────────────────────────────────────────
+function getCurrentLevel() {
+  let lv = LEVELS[0];
+  for (const l of LEVELS) { if (state.xp >= l.xpNeeded) lv = l; }
+  return lv;
+}
+function getNextLevel() {
+  const cur = getCurrentLevel();
+  return LEVELS.find(l => l.level === cur.level + 1) || null;
+}
+
+function addXP(amount) {
+  const prevLevel = getCurrentLevel();
+  state.xp += amount;
+  const newLevel = getCurrentLevel();
+  updateXPBar();
+  if (newLevel.level > prevLevel.level) {
+    setTimeout(() => showLevelUp(newLevel), 600);
+  }
+  saveState();
+}
+
+function updateXPBar() {
+  const cur = getCurrentLevel();
+  const next = getNextLevel();
+  document.getElementById('lv-num').textContent = cur.level;
+  if (next) {
+    const xpInLevel = state.xp - cur.xpNeeded;
+    const xpNeeded = next.xpNeeded - cur.xpNeeded;
+    const pct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+    document.getElementById('xp-bar').style.width = pct + '%';
+    document.getElementById('xp-frac').textContent = `${state.xp} / ${next.xpNeeded}`;
+    document.getElementById('xp-label').textContent = cur.title;
+    document.getElementById('xp-subtitle').textContent = `${xpNeeded - xpInLevel} XP to ${next.title}`;
+  } else {
+    document.getElementById('xp-bar').style.width = '100%';
+    document.getElementById('xp-frac').textContent = `${state.xp} XP`;
+    document.getElementById('xp-label').textContent = '🏆 ' + cur.title;
+    document.getElementById('xp-subtitle').textContent = 'Maximum level reached!';
+  }
+  document.getElementById('tickets-chip').textContent = state.earnedTickets.length;
+  document.getElementById('streak-chip').textContent = state.streak;
+}
+
+// ─── STREAK ──────────────────────────────────────────────────
+const STREAK_MAX = 5;
+function updateStreak() {
+  const row = document.getElementById('streak-row');
+  row.innerHTML = '';
+  const lbl = document.createElement('span');
+  lbl.className = 'streak-text' + (state.streak >= STREAK_MAX ? ' hot' : '');
+  lbl.textContent = 'Streak:';
+  row.appendChild(lbl);
+  for (let i = 0; i < STREAK_MAX; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'streak-pip' + (i < state.streak ? (state.streak >= STREAK_MAX ? ' fire' : ' lit') : '');
+    row.appendChild(pip);
+  }
+  if (state.streak >= STREAK_MAX) {
+    const hot = document.createElement('span');
+    hot.className = 'streak-text hot';
+    hot.textContent = ' 🔥 On fire! +bonus XP';
+    row.appendChild(hot);
+  }
+  document.getElementById('streak-chip').textContent = state.streak;
+}
+
+// ─── QUESTION LOGIC ──────────────────────────────────────────
+function getWeight(w) {
+  if (w.asked === 0) return 4;
+  if (w.score <= 0) return 5;
+  if (w.score === 1) return 3;
+  if (w.score === 2) return 2;
+  return 1;
+}
+
+function pickWord() {
+  if (filtered.length < 2) return null;
+  const weights = filtered.map(getWeight);
+  const total = weights.reduce((a,b) => a+b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < filtered.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return filtered[i];
+  }
+  return filtered[filtered.length-1];
+}
+
+function getDistractors(correct) {
+  return allWords.filter(w => w.word !== correct.word)
+    .sort(() => Math.random()-0.5).slice(0,3);
+}
+
+function getXpForAnswer(isStreak) {
+  let xp = 10;
+  if (isStreak) xp += Math.min(state.streak * 5, 30);
+  return xp;
+}
+
+function nextQuestion() {
+  answered = false;
+  document.getElementById('feedback-row').innerHTML = '';
+  document.getElementById('next-btn').style.display = 'none';
+
+  current = pickWord();
+  if (!current) return;
+
+  const streakBonus = state.streak >= STREAK_MAX;
+  const xpAmt = getXpForAnswer(streakBonus);
+  document.getElementById('xp-pill').textContent = `+${xpAmt} XP` + (streakBonus ? ' 🔥' : '');
+  document.getElementById('topic-badge').textContent = current.topic;
+  document.getElementById('word-display').textContent = current.word;
+  current.asked++;
+
+  const distractors = getDistractors(current);
+  const options = [current, ...distractors].sort(() => Math.random()-0.5);
+  const area = document.getElementById('choices');
+  area.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = opt.def;
+    btn.onclick = () => handleAnswer(btn, opt === current, options);
+    area.appendChild(btn);
+  });
+
+  saveState();
+}
+
+function handleAnswer(btn, isCorrect, options) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+  const fr = document.getElementById('feedback-row');
+  const wasNewMaster = current.score < 3;
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    current.score = Math.min(current.score + 1, 5);
+    state.streak++;
+    const xpGained = getXpForAnswer(state.streak >= STREAK_MAX);
+    addXP(xpGained);
+
+    const ft = document.createElement('div');
+    ft.className = 'feedback-text ok';
+    ft.textContent = 'Correct!';
+    fr.appendChild(ft);
+
+    const xpPop = document.createElement('div');
+    xpPop.className = 'xp-pop';
+    xpPop.textContent = `+${xpGained} XP`;
+    fr.appendChild(xpPop);
+    setTimeout(() => xpPop.remove(), 1300);
+
+    if (state.streak === STREAK_MAX) showToast('🔥 5-answer streak! Bonus XP activated!');
+    if (state.streak > 0 && state.streak % 10 === 0) showToast(`⚡ ${state.streak} in a row! Incredible!`);
+
+    if (wasNewMaster && current.score >= 3) {
+      checkChapterComplete(current.topic);
+    }
+  } else {
+    btn.classList.add('wrong');
+    current.score = Math.max(current.score - 1, -2);
+    state.streak = 0;
+
+    const ft = document.createElement('div');
+    ft.className = 'feedback-text bad';
+    ft.textContent = 'Not quite — correct answer highlighted.';
+    fr.appendChild(ft);
+
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      if (options.find(o => o.def === b.textContent) === current) b.classList.add('reveal');
+    });
+  }
+
+  updateStreak();
+  saveState();
+  document.getElementById('next-btn').style.display = 'inline-block';
+}
+
+// ─── CHAPTER COMPLETION ──────────────────────────────────────
+function checkChapterComplete(topic) {
+  const chWords = allWords.filter(w => w.topic === topic);
+  const mastered = chWords.filter(w => w.score >= 3).length;
+  if (mastered === chWords.length && !state.earnedTickets.includes(topic)) {
+    state.earnedTickets.push(topic);
+    saveState();
+    spawnConfetti();
+    setTimeout(() => {
+      showToast(`🎫 Chapter mastered! You earned a ticket!`);
+      setTimeout(() => showTicket(topic), 1200);
+    }, 400);
+  }
+}
+
+// ─── TICKET DISPLAY ──────────────────────────────────────────
+function showTicket(chapter) {
+  const meta = CHAPTER_META[chapter] || { icon: '⭐', hint: 'Keep collecting tickets for the mystery prize!' };
+  const ticketNum = state.earnedTickets.indexOf(chapter) + 1;
+  document.getElementById('t-chapter').textContent = chapter;
+  document.getElementById('t-seal').textContent = meta.icon;
+  document.getElementById('t-hint').textContent = meta.hint;
+  document.getElementById('t-num').textContent = `Ticket ${ticketNum} of ${TOTAL_CHAPTERS}`;
+  document.getElementById('ticket-overlay').classList.add('show');
+}
+
+function closeTicket() {
+  document.getElementById('ticket-overlay').classList.remove('show');
+}
+
+// ─── LEVEL UP ────────────────────────────────────────────────
+function showLevelUp(level) {
+  document.getElementById('lu-title').textContent = `Level ${level.level}!`;
+  document.getElementById('lu-sub').textContent = `You are now a ${level.title}`;
+  document.getElementById('levelup-overlay').classList.add('show');
+  spawnConfetti();
+}
+function closeLevelUp() {
+  document.getElementById('levelup-overlay').classList.remove('show');
+}
+
+// ─── CONFETTI ────────────────────────────────────────────────
+function spawnConfetti() {
+  const colors = ['#4ade80','#60a5fa','#f59e0b','#e879f9','#f87171','#34d399','#fbbf24'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.cssText = `
+        left:${10+Math.random()*80}%;
+        top:-10px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration:${1.5+Math.random()*1.5}s;
+        animation-delay:${Math.random()*0.5}s;
+        transform:rotate(${Math.random()*360}deg);
+        width:${6+Math.random()*8}px;
+        height:${6+Math.random()*8}px;
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+      `;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 2500);
+    }, i * 30);
+  }
+}
+
+// ─── TOAST ───────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── PROGRESS PANEL ──────────────────────────────────────────
+function renderProgress() {
+  const grid = document.getElementById('chapter-grid');
+  grid.innerHTML = '';
+  ALL_CHAPTERS.forEach(ch => {
+    const words = allWords.filter(w => w.topic === ch);
+    const mastered = words.filter(w => w.score >= 3).length;
+    const pct = Math.round((mastered / words.length) * 100);
+    const done = mastered === words.length;
+    const earned = state.earnedTickets.includes(ch);
+
+    const card = document.createElement('div');
+    card.className = 'chapter-card' + (done ? ' complete' : '');
+    card.innerHTML = `
+      <div class="ch-name">${CHAPTER_META[ch]?.icon || '📚'} ${ch}</div>
+      <div class="ch-bar-track"><div class="ch-bar-fill${done?' done':''}" style="width:${pct}%"></div></div>
+      <div class="ch-stats"><span>${mastered}/${words.length} mastered</span><span>${pct}%</span></div>
+      ${earned ? `<button class="ch-ticket-btn" style="display:block" onclick="showTicket('${ch.replace(/'/g,"\\'")}')">🎫 View Ticket</button>` : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ─── TICKETS LIST ────────────────────────────────────────────
+function renderTicketsList() {
+  const list = document.getElementById('tickets-list');
+  const empty = document.getElementById('no-tickets');
+  list.innerHTML = '';
+  if (state.earnedTickets.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  state.earnedTickets.forEach(ch => {
+    const meta = CHAPTER_META[ch] || { icon: '⭐' };
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background:var(--surface);border:1px solid var(--gold);border-radius:12px;
+      padding:1rem;cursor:pointer;text-align:center;transition:opacity 0.2s;
+    `;
+    card.innerHTML = `
+      <div style="font-size:28px;margin-bottom:4px">${meta.icon}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:2px">TICKET EARNED</div>
+      <div style="font-size:11px;color:var(--text-muted)">${ch}</div>
+    `;
+    card.onclick = () => showTicket(ch);
+    list.appendChild(card);
+  });
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+updateXPBar();
+updateStreak();
+nextQuestion();
+</script>
+</body>
+</html>
